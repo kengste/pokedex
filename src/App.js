@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import CheckboxField from './Checkbox';
+import NameButton from './NameButton';
 import './App.css';
 
 class App extends Component {
@@ -12,6 +13,7 @@ class App extends Component {
       isChecked: true,
       types_data: [],
       displayedTypes: {},
+      pokemonNameOrder: null,
     }
   }
   async componentDidMount() {
@@ -80,22 +82,39 @@ class App extends Component {
     }
     this.setState({displayedData});
   }
+  handleNameOrderChange = (event, nameAscOrder) => {
+    // nameAscOrder ?
+    const displayedData = this.state.displayedData;
+    if(nameAscOrder) {
+      displayedData.sort(function(a, b) {
+        return a.ename.localeCompare(b.ename);
+      });
+    } else {
+      displayedData.sort(function(b, a) {
+        return a.ename.localeCompare(b.ename);
+      });
+    }
+
+    this.setState({displayedData});
+  }
   render() {
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Welcome to React</h1>
+            <div>
+                <label>
+                  Name: <input type="text" value={this.state.value} onChange={this.handleChange} />
+                </label>
+                <NameButton onChange={this.handleNameOrderChange} />
+                <br />
+                <label>
+                  {this.state.types_data.map((type) =>
+                    <CheckboxField key={type.cname} label={type.ename} category={type.cname} onChange={this.handleCheckbox} />
+                  )}
+               </label>
+            </div>
         </header>
-        <div>
-            <label>
-              Name: <input type="text" value={this.state.value} onChange={this.handleChange} />
-            </label>
-            <label>
-              {this.state.types_data.map((type) =>
-                <CheckboxField key={type.cname} label={type.ename} category={type.cname} onChange={this.handleCheckbox} />
-              )}
-           </label>
-        </div>
         <div className="App-intro">
           {
             this.state.displayedData.map((item) =>
