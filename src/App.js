@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import CheckboxField from './Checkbox';
-import NameButton from './NameButton';
+import Button from './Button';
+import Pokemon from './Pokemon';
+import PokemonDetails from './PokemonDetails';
 import './App.css';
 
 class App extends Component {
@@ -14,9 +16,12 @@ class App extends Component {
       types_data: [],
       displayedTypes: {},
       pokemonNameOrder: null,
+      expand: '',
+      loading: true,
     }
   }
   async componentDidMount() {
+    setTimeout(() => this.setState({ loading: false }), 1500);
     let data = await (await fetch(`${process.env.PUBLIC_URL}/data/pokedex.json`)).json();
     const displayedData = data;
     let types_data = await (await fetch(`${process.env.PUBLIC_URL}/data/types.json`)).json();
@@ -26,7 +31,6 @@ class App extends Component {
     }
     this.setState({types_data, data, displayedData, displayedTypes});
   }
-
   handleChange = (event) => {
     this.setState({value: event.target.value});
     this.filterByName(this.state.data, event.target.value);
@@ -57,33 +61,45 @@ class App extends Component {
     const arrayOfTypes = this.state.displayedTypes;
     arrayOfTypes[value] = isChecked;
     this.setState({displayedTypes: arrayOfTypes});
-      for (let pokemon of this.state.data) {
-        let checkPokemonType = null;
-        let check = false;
-        for (let type of pokemon['type']) {
-          for (let el in arrayOfTypes) {
-            if (arrayOfTypes[el] && el === type) {
-              check = true;
-              break;
-            }
-            check = false;
+    for (let pokemon of this.state.data) {
+      let checkPokemonType = null;
+      let check = false;
+      for (let type of pokemon['type']) {
+        for (let el in arrayOfTypes) {
+          if (arrayOfTypes[el] && el === type) {
+            check = true;
+            break;
           }
-          if (check && checkPokemonType === null) {
-            checkPokemonType = true;
-          } else if (check && checkPokemonType) {
-            checkPokemonType = true;
-          } else {
-            checkPokemonType = false;
-          }
+          check = false;
         }
-        if (checkPokemonType) {
-          displayedData.push(pokemon);
+        if (check && checkPokemonType === null) {
+          checkPokemonType = true;
+        } else if (check && checkPokemonType) {
+          checkPokemonType = true;
+        } else {
+          checkPokemonType = false;
         }
+      }
+      if (checkPokemonType) {
+        displayedData.push(pokemon);
+      }
+    }
+    this.setState({displayedData});
+  }
+  handleIdOrderChange = (event, nameAscOrder) => {
+    const displayedData = this.state.displayedData;
+    if(nameAscOrder) {
+      displayedData.sort(function(a, b) {
+        return a.id.localeCompare(b.id);
+      });
+    } else {
+      displayedData.sort(function(b, a) {
+        return a.id.localeCompare(b.id);
+      });
     }
     this.setState({displayedData});
   }
   handleNameOrderChange = (event, nameAscOrder) => {
-    // nameAscOrder ?
     const displayedData = this.state.displayedData;
     if(nameAscOrder) {
       displayedData.sort(function(a, b) {
@@ -94,45 +110,63 @@ class App extends Component {
         return a.ename.localeCompare(b.ename);
       });
     }
-
     this.setState({displayedData});
   }
+  handleHover = (event, pokemonId) => {
+    this.setState({expand: pokemonId});
+  }
+  handleHoverExit = (event, pokemonId) => {
+    this.setState({expand: ''});
+  }
   render() {
+    if(this.state.loading) {
+      return null;
+    }
     return (
       <div className="App">
         <header className="App-header">
-          <h1 className="App-title">Welcome to React</h1>
-            <div>
-                <label>
-                  Name: <input type="text" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                <NameButton onChange={this.handleNameOrderChange} />
-                <br />
-                <label>
-                  {this.state.types_data.map((type) =>
-                    <CheckboxField key={type.cname} label={type.ename} category={type.cname} onChange={this.handleCheckbox} />
-                  )}
-               </label>
-            </div>
-        </header>
-        <div className="App-intro">
-          {
-            this.state.displayedData.map((item) =>
-              <div key={item.id} className="child">
-                <span>{this.getPokemonTypes(this.state.types_data, item.type)}</span>
-                <br />
-                <span>{item.ename}</span>
-                <br />
-                <span>{item.id}</span>
-                <br />
-                <img src={`${process.env.PUBLIC_URL}/images/img/${item.id + (item.flatName || item.ename)}.png`} alt={`${item.ename}`}/>
-              </div>
-            )
-          }
+          <div>
+            <label>
+              Search By Name: <input type="text" value={this.state.value} onChange={this.handleChange} />
+          </label>
+          <br /><br />
+          <Button onChange={this.handleNameOrderChange} title="Pokemon Names" />
+          <br /><br />
+          <Button onChange={this.handleIdOrderChange} title="Pokemon Ids" />
+          <br /><br />
+          <label>
+            {this.state.types_data.map((type) =>
+              <CheckboxField key={type.cname} label={type.ename} category={type.cname} onChange={this.handleCheckbox} />
+            )}
+          </label>
         </div>
-      </div>
-    );
+      </header>
+      <div className="App-intro">
+        {
+          this.state.displayedData.map((item) =>
+          this.state.expand !== item.id
+          ? <Pokemon key={item.id} id={item.id} name={item.ename} type={this.getPokemonTypes(this.state.types_data, item.type)} image={`${process.env.PUBLIC_URL}/images/img/${item.id + (item.flatName || item.ename)}.png`} onChange={this.handleHover} />
+        : <PokemonDetails
+        key={item.id}
+        id={item.id}
+        name={item.ename}
+        type={this.getPokemonTypes(this.state.types_data, item.type)}
+        image={`${process.env.PUBLIC_URL}/images/img/${item.id + (item.flatName || item.ename)}.png`}
+        sprite={`${process.env.PUBLIC_URL}/images/spr/${item.id}MS.png`}
+        onChange={this.handleHoverExit}
+        attack={item.base['Attack']}
+        defense={item.base['Defense']}
+        hp={item.base['HP']}
+        spAtk={item.base['Sp.Atk']}
+        spDef={item.base['Sp.Def']}
+        speed={item.base['Speed']}
+        />
+    )
   }
+</div>
+</div>
+);
+}
 }
 
 export default App;

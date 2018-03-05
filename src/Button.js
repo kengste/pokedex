@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 
-export default class NameButton extends Component {
+export default class Button extends Component {
   constructor() {
     super();
     this.state = {
-      nameAscOrder: false,
+      nameAscOrder: true,
     }
   }
 
@@ -17,7 +17,7 @@ export default class NameButton extends Component {
   render() {
     return (
       <span>
-        <button onClick={this.handleClick}>{(this.state.nameAscOrder) ? 'Change to DESC' : 'Change to ASC'}</button>
+        <button onClick={this.handleClick}>{(this.state.nameAscOrder) ? `Sort by ${this.props.title} DESC` : `Sort by ${this.props.title} ASC`}</button>
       </span>
     )}
 }
