@@ -115,7 +115,7 @@ class App extends Component {
   handleHover = (event, pokemonId) => {
     this.setState({expand: pokemonId});
   }
-  handleHoverExit = (event, pokemonId) => {
+  handleHoverExit = (event) => {
     this.setState({expand: ''});
   }
   render() {
@@ -145,22 +145,29 @@ class App extends Component {
         {
           this.state.displayedData.map((item) =>
           this.state.expand !== item.id
-          ? <Pokemon key={item.id} id={item.id} name={item.ename} type={this.getPokemonTypes(this.state.types_data, item.type)} image={`${process.env.PUBLIC_URL}/images/img/${item.id + (item.flatName || item.ename)}.png`} onChange={this.handleHover} />
-        : <PokemonDetails
-        key={item.id}
-        id={item.id}
-        name={item.ename}
-        type={this.getPokemonTypes(this.state.types_data, item.type)}
-        image={`${process.env.PUBLIC_URL}/images/img/${item.id + (item.flatName || item.ename)}.png`}
-        sprite={`${process.env.PUBLIC_URL}/images/spr/${item.id}MS.png`}
-        onChange={this.handleHoverExit}
-        attack={item.base['Attack']}
-        defense={item.base['Defense']}
-        hp={item.base['HP']}
-        spAtk={item.base['Sp.Atk']}
-        spDef={item.base['Sp.Def']}
-        speed={item.base['Speed']}
-        />
+          ? <Pokemon
+              key={item.id}
+              id={item.id}
+              name={item.ename}
+              type={this.getPokemonTypes(this.state.types_data, item.type)}
+              image={`${process.env.PUBLIC_URL}/images/img/${item.id + (item.flatName || item.ename)}.png`}
+              onChange={this.handleHover}
+            />
+          : <PokemonDetails
+              key={item.id}
+              id={item.id}
+              name={item.ename}
+              type={this.getPokemonTypes(this.state.types_data, item.type)}
+              image={`${process.env.PUBLIC_URL}/images/img/${item.id + (item.flatName || item.ename)}.png`}
+              sprite={`${process.env.PUBLIC_URL}/images/spr/${item.id}MS.png`}
+              onChange={this.handleHoverExit}
+              attack={item.base['Attack']}
+              defense={item.base['Defense']}
+              hp={item.base['HP']}
+              spAtk={item.base['Sp.Atk']}
+              spDef={item.base['Sp.Def']}
+              speed={item.base['Speed']}
+            />
     )
   }
 </div>
